@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stopwatch</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 50px;
+    }
+
+    #display {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    #controls {
+      margin-bottom: 20px;
+    }
+
+    #lapTimes {
+      text-align: left;
+    }
+
+    button {
+      font-size: 1em;
+      margin: 5px;
+      padding: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="display">0:00:00</div>
+  <div id="controls">
+    <button onclick="startStop()">Start/Stop</button>
+    <button onclick="recordLap()">Lap</button>
+    <button onclick="reset()">Reset</button>
+  </div>
+  <div id="lapTimes"></div>
+
+  <script>
+    let isRunning = false;
+    let startTime;
+    let lapStartTime;
+    let lapCount = 1;
+
+    function startStop() {
+      if (isRunning) {
+        stop();
+      } else {
+        start();
+      }
+    }
+
+    function start() {
+      isRunning = true;
+      startTime = new Date().getTime();
+      lapStartTime = startTime;
+      updateDisplay();
+      updateControls('Stop', 'Lap', true);
+      lapCount = 1;
+      clearLapTimes();
+      updateLapTimes('Lap 1: 0:00:00');
+      timerInterval = setInterval(updateDisplay, 1000);
+    }
+
+    function stop() {
+      isRunning = false;
+      clearInterval(timerInterval);
+      updateControls('Start', 'Reset', false);
+    }
+
+    function recordLap() {
+      if (isRunning) {
+        const lapTime = calculateLapTime();
+        updateLapTimes(`Lap ${lapCount}: ${formatTime(lapTime)}`);
+        lapCount++;
+        lapStartTime = new Date().getTime();
+      }
+    }
+
+    function reset() {
+      stop();
+      updateDisplay();
+      updateControls('Start', 'Lap', false);
+      clearLapTimes();
+    }
+
+    function updateDisplay() {
+      const currentTime = isRunning ? calculateElapsedTime() : 0;
+      document.getElementById('display').textContent = formatTime(currentTime);
+    }
+
+    function updateControls(startStopText, lapResetText, lapResetEnabled) {
+      document.getElementsByTagName('button')[0].textContent = startStopText;
+      document.getElementsByTagName('button')[1].textContent = lapResetText;
+      document.getElementsByTagName('button')[1].disabled = !lapResetEnabled;
+    }
+
+    function clearLapTimes() {
+      document.getElementById('lapTimes').innerHTML = '';
+    }
+
+    function updateLapTimes(lapTime) {
+      const lapTimesElement = document.getElementById('lapTimes');
+      const newLapTimeElement = document.createElement('div');
+      newLapTimeElement.textContent = lapTime;
+      lapTimesElement.appendChild(newLapTimeElement);
+    }
+
+    function calculateElapsedTime() {
+      const currentTime = new Date().getTime();
+      const elapsedMilliseconds = currentTime - startTime;
+      return Math.floor(elapsedMilliseconds / 1000);
+    }
+
+    function calculateLapTime() {
+      const currentTime = new Date().getTime();
+      const lapTimeMilliseconds = currentTime - lapStartTime;
+      return Math.floor(lapTimeMilliseconds / 1000);
+    }
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${pad(minutes)}:${pad(remainingSeconds)}`;
+    }
+
+    function pad(value) {
+      return value < 10 ? `0${value}` : value;
+    }
+  </script>
+</body>
+</html>
